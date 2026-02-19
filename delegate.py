@@ -2,15 +2,16 @@ import os
 import time
 import socket
 from analysis import azar_surface_analysis
+import numpy as np
 
-RESOLUTION = 800#2000
+RESOLUTION = 2000
 TCP_PORT = 4192
 TCP_HOST = "192.168.3.232"
 WATCH_PATH = "E:/IPG OmniWELD Data/3D Viewer/AutomationTests_Feb2026/20260219"
 
 def analyze_file(filepath):
     with open(filepath, 'r') as f:
-        data = nd.loadtxt(f)
+        data = np.loadtxt(f,delimiter = ',')
         HD, AH, SS = azar_surface_analysis(data, resolution=RESOLUTION, pixel_width=1e-6, rot90_value=0, figure_on=False)
         return HD, AH, SS
 
