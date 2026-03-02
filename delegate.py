@@ -63,8 +63,9 @@ while True:
         for filename in new_files_sorted:
             filepath = watch_dir / filename
             try:
+                print(f"analyzing {filename}")
                 result = analyze_file(filepath)
-                send_tcp(result)
+                send_tcp(result,tcp_socket)
                 processed.add(filename)
                 print(f"Processed: {filename}")
             except Exception as e:
