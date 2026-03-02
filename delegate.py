@@ -32,14 +32,16 @@ watch_dir = WATCH_PATH
 i = 0
 while True:
     print(f"watch loop itr: {i}")
-    i = i + 1;
+    i = i + 1
     current_files = {f for f in os.listdir(watch_dir) if f.endswith('.txt')}
     new_files = current_files - processed
     
     if (len(new_files) == 0):
            print("waiting for new file...")
+
+    new_files_sorted = sorted(new_files,key=lambda f: os.path.getmtime(os.path.join(watch_dir, f)))
     
-    for filename in new_files:
+    for filename in new_files_sorted:
         filepath = os.path.join(watch_dir, filename)
         try:
             print(f"analyzing {filename}")
