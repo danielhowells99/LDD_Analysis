@@ -67,7 +67,6 @@ while True:
                 result = analyze_file(filepath)
                 send_tcp(result,tcp_socket)
                 processed.add(filename)
-                print(f"Processed: {filename}")
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
     
