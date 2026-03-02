@@ -3,6 +3,7 @@ import time
 import socket
 from analysis import azar_surface_analysis
 import numpy as np
+from pathlib import Path
 
 RESOLUTION = 2000
 TCP_PORT = 4192
@@ -27,28 +28,46 @@ tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 tcp_socket.connect((TCP_HOST, TCP_PORT))
 print("Connected to LabVIEW")
 
+# Prompt for directory
+watch_dir_input = input("Enter directory path to watch: ")
+
+# Path handles both / and \ automatically
+watch_dir = Path(watch_dir_input)
+
+# Verify it exists
+if not watch_dir.exists():
+    print(f"Error: Directory '{watch_dir}' does not exist!")
+    exit(1)
+
+if not watch_dir.is_dir():
+    print(f"Error: '{watch_dir}' is not a directory!")
+    exit(1)
+
+print(f"Watching: {watch_dir}")
+
 processed = set()
-watch_dir = WATCH_PATH
 i = 0
 while True:
     print(f"watch loop itr: {i}")
     i = i + 1
-    current_files = {f for f in os.listdir(watch_dir) if f.endswith('.txt')}
+    # Use glob to find .txt files
+    current_files = {f.name for f in watch_dir.glob('*.txt')}
     new_files = current_files - processed
     
-    if (len(new_files) == 0):
-           print("waiting for new file...")
-
-    new_files_sorted = sorted(new_files,key=lambda f: os.path.getmtime(os.path.join(watch_dir, f)))
+    if new_files:
+        new_files_sorted = sorted(
+            new_files,
+            key=lambda f: (watch_dir / f).stat().st_mtime
+        )
     
-    for filename in new_files_sorted:
-        filepath = os.path.join(watch_dir, filename)
-        try:
-            print(f"analyzing {filename}")
-            result = analyze_file(filepath)
-            send_tcp(result,tcp_socket)
-            processed.add(filename)
-        except Exception as e:
-            print(f"Error processing {filename}: {e}")
+        for filename in new_files_sorted:
+            filepath = watch_dir / filename
+            try:
+                result = analyze_file(filepath)
+                send_tcp(result)
+                processed.add(filename)
+                print(f"Processed: {filename}")
+            except Exception as e:
+                print(f"Error processing {filename}: {e}")
     
     time.sleep(1)  # Check every second
